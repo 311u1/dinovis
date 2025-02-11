@@ -22,6 +22,7 @@ build/
 # Audio files (except demo)
 *.mp3
 !Flume - Sleepless feat. Jezzabell Doran (Official).mp3
+!Travis Scott - FE!N (Official Audio) ft. Playboi Carti.mp3
 *.wav
 *.ogg
 
