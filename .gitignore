@@ -1,0 +1,29 @@
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build files
+dist/
+build/
+
+# Audio files (since they might be large)
+*.mp3
+*.wav
+*.ogg
+
+# Environment variables
+.env
+.env.local 

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DINO-VIS 🦖</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        #playButton {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2;
+            padding: 12px 24px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: rgba(128, 0, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 30px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        #playButton:hover {
+            background: rgba(128, 0, 255, 0.5);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="visualizer"></canvas>
+    <button id="playButton">Play</button>
+    <script src="visualizer.js"></script>
+</body>
+</html> 
