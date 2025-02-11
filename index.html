@@ -23,11 +23,20 @@
             z-index: 1;
         }
         
-        #playButton {
+        .button-container {
             position: fixed;
             bottom: 20px;
-            right: 20px;
+            width: 100%;
             z-index: 2;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .play-button {
             padding: 12px 24px;
             font-size: 18px;
             font-weight: bold;
@@ -39,17 +48,38 @@
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
             text-transform: uppercase;
+            min-width: 140px;
+            text-align: center;
         }
         
-        #playButton:hover {
+        .play-button:hover {
             background: rgba(128, 0, 255, 0.5);
             transform: scale(1.05);
+        }
+        
+        #playFlume {
+            background: rgba(255, 182, 193, 0.3);
+        }
+        
+        #playFlume:hover {
+            background: rgba(255, 182, 193, 0.5);
+        }
+        
+        #playTravis {
+            background: rgba(255, 0, 0, 0.3);
+        }
+        
+        #playTravis:hover {
+            background: rgba(255, 0, 0, 0.5);
         }
     </style>
 </head>
 <body>
     <canvas id="visualizer"></canvas>
-    <button id="playButton">Play</button>
+    <div class="button-container">
+        <button id="playFlume" class="play-button">Start 🥰</button>
+        <button id="playTravis" class="play-button">Start 😈</button>
+    </div>
     <script src="visualizer.js"></script>
 </body>
 </html> 

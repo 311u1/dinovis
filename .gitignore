@@ -19,8 +19,9 @@ package-lock.json
 dist/
 build/
 
-# Audio files (since they might be large)
+# Audio files (except demo)
 *.mp3
+!Flume - Sleepless feat. Jezzabell Doran (Official).mp3
 *.wav
 *.ogg
 

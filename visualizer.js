@@ -52,10 +52,10 @@ class CatVisualizer {
         this.time = 0;
         this.tunnelDepth = 0;
         this.catRotation = 0;
-        this.baseRadius = 0; // Store the base radius for pulsing
-        this.pulsePhase = 0; // Track pulse phase
-        this.dinoPhase = 0; // For dino's vibing animation
-        this.dinoShape = new DinoShape(); // Add the dino shape helper
+        this.baseRadius = 0;
+        this.pulsePhase = 0;
+        this.dinoPhase = 0;
+        this.dinoShape = new DinoShape();
         this.lastAudioData = new Array(32).fill(0);
         this.energyHistory = new Array(10).fill(0);
         this.peakDetected = false;
@@ -65,7 +65,13 @@ class CatVisualizer {
         this.createParticles();
         this.createWaves();
         this.createRings();
-        this.audioFile = 'Flume - Sleepless feat. Jezzabell Doran (Official).mp3';
+        
+        // Define available tracks
+        this.tracks = {
+            flume: 'Flume - Sleepless feat. Jezzabell Doran (Official).mp3',
+            travis: 'Travis Scott - FE!N (Official Audio) ft. Playboi Carti.mp3'
+        };
+        this.currentTrack = null;
         
         // Initialize audio context but keep it suspended
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -75,12 +81,6 @@ class CatVisualizer {
         
         // Start animation immediately
         this.animate();
-        
-        // Load audio in background
-        this.loadAudio().catch(err => {
-            console.error('Failed to load audio:', err);
-            alert('Failed to load audio file. Please check if the file exists and try again.');
-        });
     }
 
     setupCanvas() {
@@ -93,8 +93,42 @@ class CatVisualizer {
     }
 
     setupEventListeners() {
-        const playButton = document.getElementById('playButton');
-        playButton.addEventListener('click', () => this.togglePlay());
+        const playFlume = document.getElementById('playFlume');
+        const playTravis = document.getElementById('playTravis');
+        
+        playFlume.addEventListener('click', async () => {
+            if (this.currentTrack === this.tracks.flume && this.isPlaying) {
+                await this.audioContext.suspend();
+                this.isPlaying = false;
+                playFlume.textContent = 'Start 🥰';
+            } else {
+                if (this.source) {
+                    this.source.stop();
+                    this.source.disconnect();
+                }
+                this.currentTrack = this.tracks.flume;
+                await this.initAudio();
+                playFlume.textContent = 'Pause 🥰';
+                playTravis.textContent = 'Start 😈';
+            }
+        });
+        
+        playTravis.addEventListener('click', async () => {
+            if (this.currentTrack === this.tracks.travis && this.isPlaying) {
+                await this.audioContext.suspend();
+                this.isPlaying = false;
+                playTravis.textContent = 'Start 😈';
+            } else {
+                if (this.source) {
+                    this.source.stop();
+                    this.source.disconnect();
+                }
+                this.currentTrack = this.tracks.travis;
+                await this.initAudio();
+                playTravis.textContent = 'Pause 😈';
+                playFlume.textContent = 'Start 🥰';
+            }
+        });
     }
 
     createCats() {
@@ -167,8 +201,8 @@ class CatVisualizer {
 
     async loadAudio() {
         try {
-            console.log('Loading audio file:', this.audioFile);
-            const response = await fetch(this.audioFile);
+            console.log('Loading audio file:', this.currentTrack);
+            const response = await fetch(this.currentTrack);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -190,11 +224,13 @@ class CatVisualizer {
 
     async initAudio() {
         try {
-            if (!this.audioBuffer) {
-                await this.loadAudio();
+            if (!this.currentTrack) {
+                alert('Please select a track first!');
+                return;
             }
             
-            // Create new audio source
+            await this.loadAudio();
+            
             if (this.source) {
                 this.source.disconnect();
             }
@@ -206,34 +242,12 @@ class CatVisualizer {
             await this.audioContext.resume();
             this.source.start(0);
             this.isPlaying = true;
-            document.getElementById('playButton').textContent = 'Pause';
             
             console.log('Audio playback started');
         } catch (error) {
             console.error('Error initializing audio:', error);
             alert('Error playing audio. Please try again.');
             throw error;
-        }
-    }
-
-    async togglePlay() {
-        try {
-            if (this.isPlaying) {
-                await this.audioContext.suspend();
-                this.isPlaying = false;
-                document.getElementById('playButton').textContent = 'Play';
-            } else {
-                if (!this.source || !this.source.buffer) {
-                    await this.initAudio();
-                } else {
-                    await this.audioContext.resume();
-                    this.isPlaying = true;
-                    document.getElementById('playButton').textContent = 'Pause';
-                }
-            }
-        } catch (error) {
-            console.error('Error toggling playback:', error);
-            alert('Error with audio playback. Please refresh the page and try again.');
         }
     }
 
@@ -450,7 +464,7 @@ class CatVisualizer {
         // Add highlight/glow during peaks
         if (dynamics.isPeak) {
             this.ctx.shadowColor = '#32CD32';
-            this.ctx.shadowBlur = 15 * perspective; // Slightly reduced glow
+            this.shadowBlur = 15 * perspective; // Slightly reduced glow
             this.ctx.strokeStyle = '#90EE90';
             this.ctx.lineWidth = 2 * perspective;
             this.ctx.stroke();
@@ -463,13 +477,13 @@ class CatVisualizer {
         const centerX = this.canvas.width / 2;
         const centerY = this.canvas.height / 2;
         
-        // Update tunnel depth
-        this.tunnelDepth += (2 + dynamics.intensity * 8);
+        // Update tunnel depth with additional 15% faster movement (total ~35% faster than original)
+        this.tunnelDepth += (2.76 + dynamics.intensity * 11); // Increased from 2.4 + dynamics.intensity * 9.6
         
-        // Draw palm trees along the tunnel
+        // Draw palm trees along the tunnel with adjusted spacing for smoother motion
         const numPalmPairs = 8;
         for (let i = 0; i < numPalmPairs; i++) {
-            const z = ((this.tunnelDepth + (i * 200)) % 1600) - 400;
+            const z = ((this.tunnelDepth + (i * 276)) % 2208) - 552; // Adjusted spacing and range for smoother motion at higher speed
             const perspective = 1000 / (1000 + z);
             const xOffset = this.canvas.width * 0.4;
             const height = 200 * perspective;
@@ -495,76 +509,81 @@ class CatVisualizer {
         
         // Draw each ring with plasma effect
         this.rings.forEach((ring, index) => {
-            // Update ring position and rotation
-            ring.z -= (4 + dynamics.intensity * 12);
-            ring.rotation += ring.rotationSpeed * (1 + dynamics.intensity);
+            // Update ring position and rotation with smoother motion
+            ring.z -= (3 + dynamics.intensity * 8); // Reduced base speed for smoother flow
+            ring.rotation += ring.rotationSpeed * (0.8 + dynamics.intensity * 0.7); // More gradual rotation
             
             // Reset ring when it gets too close
             if (ring.z < -50) {
                 ring.z = 1000;
                 ring.rotation = Math.random() * Math.PI * 2;
+                ring.distortion = 0.1 + Math.random() * 0.15; // Reduced distortion range
             }
             
-            // Calculate ring properties based on z-position
+            // Calculate ring properties based on z-position with easing
             const perspective = 1000 / (1000 + ring.z);
+            const easeIntensity = dynamics.intensity * dynamics.intensity; // Quadratic easing
             const size = perspective * Math.min(this.canvas.width, this.canvas.height) * 
-                        (0.8 + dynamics.intensity * 0.4);
+                        (0.8 + easeIntensity * 0.3); // Smoother size changes
             
-            // Draw the plasma ring
+            // Draw the plasma ring with enhanced fluidity
             this.ctx.save();
             this.ctx.translate(centerX, centerY);
             this.ctx.rotate(ring.rotation);
             
-            // Create multiple thin rings for plasma effect
-            const numLayers = 3;
+            // Create multiple thin rings for plasma effect with smoother transitions
+            const numLayers = 4; // Added an extra layer for more depth
             for (let layer = 0; layer < numLayers; layer++) {
-                const layerSize = size * (1 + layer * 0.02);
-                const segments = 64; // Increased segments for smoother curves
+                const layerSize = size * (1 + layer * 0.03); // More subtle layer separation
+                const segments = 96; // Increased segments for smoother curves
                 this.ctx.beginPath();
                 
                 for (let i = 0; i <= segments; i++) {
                     const angle = (i / segments) * Math.PI * 2;
-                    const timeOffset = this.time * (1 + layer * 0.5);
-                    const distortion = dynamics.isPeak ? 
-                        (1 + Math.sin(angle * 12 + timeOffset) * 0.15) : 
-                        (1 + Math.sin(angle * 6 + timeOffset) * ring.distortion * 0.8);
+                    const timeOffset = this.time * (0.7 + layer * 0.3); // Slower time progression
+                    
+                    // Smoother distortion calculation
+                    const wavePhase = angle * 4 + timeOffset; // Reduced frequency
+                    const baseDistortion = Math.sin(wavePhase) * ring.distortion * 0.6;
+                    const musicDistortion = dynamics.isPeak ? 
+                        Math.sin(angle * 8 + timeOffset * 1.5) * 0.12 : // More subtle peak effect
+                        baseDistortion;
+                    
+                    const distortion = 1 + musicDistortion + (dynamics.intensity * 0.1); // Added subtle constant motion
                     
                     const x = Math.cos(angle) * layerSize * distortion;
                     const y = Math.sin(angle) * layerSize * distortion;
                     
-                    if (i === 0) {
-                        this.ctx.moveTo(x, y);
-                    } else {
-                        this.ctx.lineTo(x, y);
-                    }
+                    if (i === 0) this.ctx.moveTo(x, y);
+                    else this.ctx.lineTo(x, y);
                 }
                 
                 this.ctx.closePath();
                 
-                // Create plasma-like gradient with enhanced purple dynamics
-                const baseHue = 270 + (dynamics.intensity * 30); // Purple base that shifts with intensity
-                const hueOffset = (layer * 20 + index * 5 + this.time * 10) % 60; // More dynamic hue variation
-                const intensity = dynamics.isPeak ? 80 : 50 + (dynamics.intensity * 20);
-                const saturation = 90 + (dynamics.change * 10); // Dynamic saturation
-                const layerOpacity = perspective * (dynamics.isPeak ? 0.5 : 0.3) * (1 - layer * 0.2);
+                // Enhanced plasma-like gradient with smoother color transitions
+                const baseHue = 270 + (Math.sin(this.time * 0.5) * 15); // Slower color cycling
+                const hueOffset = (layer * 15 + index * 3 + this.time * 8) % 40; // More subtle hue variation
+                const intensity = dynamics.isPeak ? 75 : 45 + (easeIntensity * 25);
+                const saturation = 85 + (dynamics.change * 15); // More dynamic saturation
+                const layerOpacity = perspective * (dynamics.isPeak ? 0.45 : 0.25) * (1 - layer * 0.15);
                 
-                // Create more ethereal gradient with music-reactive colors
+                // Create more ethereal gradient with smoother transitions
                 const gradient = this.ctx.createLinearGradient(-layerSize, -layerSize, layerSize, layerSize);
                 gradient.addColorStop(0, `hsla(${baseHue + hueOffset}, ${saturation}%, ${intensity + 20}%, ${layerOpacity})`);
-                gradient.addColorStop(0.3, `hsla(${baseHue - 40 + hueOffset}, ${saturation - 10}%, ${intensity + 10}%, ${layerOpacity * 0.8})`);
-                gradient.addColorStop(0.7, `hsla(${baseHue + 20 + hueOffset}, ${saturation - 5}%, ${intensity + 15}%, ${layerOpacity * 0.9})`);
-                gradient.addColorStop(1, `hsla(${baseHue + 60 + hueOffset}, ${saturation}%, ${intensity + 5}%, ${layerOpacity})`);
+                gradient.addColorStop(0.3, `hsla(${baseHue - 30 + hueOffset}, ${saturation - 5}%, ${intensity + 10}%, ${layerOpacity * 0.9})`);
+                gradient.addColorStop(0.7, `hsla(${baseHue + 15 + hueOffset}, ${saturation - 3}%, ${intensity + 15}%, ${layerOpacity * 0.95})`);
+                gradient.addColorStop(1, `hsla(${baseHue + 45 + hueOffset}, ${saturation}%, ${intensity + 5}%, ${layerOpacity})`);
                 
                 // Draw thinner lines with enhanced glow
                 this.ctx.strokeStyle = gradient;
-                this.ctx.lineWidth = 1 + perspective * 3 * (1 + dynamics.intensity) * (1 - layer * 0.2);
+                this.ctx.lineWidth = 1 + perspective * 2.5 * (1 + easeIntensity) * (1 - layer * 0.15);
                 this.ctx.stroke();
                 
-                // Add enhanced glow effect
+                // Add enhanced glow effect with smoother transitions
                 if (dynamics.isPeak) {
-                    const peakHue = baseHue + Math.sin(this.time * 5) * 30;
-                    this.ctx.shadowColor = `hsla(${peakHue}, ${saturation + 10}%, 70%, ${layerOpacity * 1.2})`;
-                    this.ctx.shadowBlur = 15 * perspective * (1 + dynamics.intensity);
+                    const peakHue = baseHue + Math.sin(this.time * 3) * 20; // Slower peak color cycling
+                    this.ctx.shadowColor = `hsla(${peakHue}, ${saturation + 5}%, 65%, ${layerOpacity})`;
+                    this.ctx.shadowBlur = 12 * perspective * (1 + easeIntensity);
                     this.ctx.stroke();
                 }
             }
